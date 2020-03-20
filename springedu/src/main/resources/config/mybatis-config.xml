@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<typeAliases>
+		<typeAlias type="com.kh.portfolio.member.vo.MemberVO" alias="MemberVO"/>
+		<typeAlias type="com.kh.portfolio.board.vo.BoardVO" alias="BoardVO"/>
+		<typeAlias type="com.kh.portfolio.board.vo.AboardVO" alias="AboardVO"/>
+		<typeAlias type="com.kh.portfolio.board.vo.NboardVO" alias="NboardVO"/>
+		<typeAlias type="com.kh.portfolio.board.vo.AboardFileVO" alias="AboardFileVO"/>
+		<typeAlias type="com.kh.portfolio.board.vo.RboardVO" alias="RboardVO"/>
+		<typeAlias type="com.kh.portfolio.board.vo.ArboardVO" alias="ArboardVO"/>
+		<typeAlias type="com.kh.portfolio.board.vo.BoardFileVO" alias="BoardFileVO"/>
+		<typeAlias type="com.kh.portfolio.board.vo.BoardCategoryVO" alias="BoardCategoryVO"/>
+		<typeAlias type="com.kh.portfolio.board.vo.VoteVO" alias="VoteVO"/>
+		<typeAlias type="com.kh.portfolio.board.vo.AvoteVO" alias="AvoteVO"/>
+		<typeAlias type="com.kh.portfolio.board.vo.FboardVO" alias="FboardVO"/>
+		<typeAlias type="com.kh.portfolio.board.vo.FboardFileVO" alias="FboardFileVO"/>
+	</typeAliases>
+</configuration>

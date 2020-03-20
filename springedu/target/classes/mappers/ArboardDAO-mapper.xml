@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mappers.ArboardDAO-mapper">
+
+<!-- 댓작 -->
+<insert id="write"
+				parameterType="ArboardVO">
+				
+INSERT INTO arboard(
+				arnum,				arbnum,				arid,
+				arnickname,	arcontent,	  argroup
+				) VALUES (
+				arboard_arnum_seq.nextval,
+        #{arbnum},
+				#{arid},
+				#{arnickname},
+				#{arcontent},
+				arboard_arnum_seq.currval
+				)
+</insert>
+
+<!-- 댓목 -->
+<select id="list"
+				parameterType="map"
+				resultType="ArboardVO">
+				select     x1.arnum,         x1.arbnum,
+		         x1.arid,          x1.arnickname,
+		         x1.arcdate,
+		         x1.arcontent,
+		         x1.argroup,       x1.arstep,        x1.arindent,
+		         x1.aprnum,				x1.aprid,				 x1.aprnickname,
+	           nvl(x2.good,0) good,  nvl(x2.bad,0) bad
+	from 
+		(select  arnum,         arbnum,
+		         arid,          arnickname,
+		         arcdate,
+		         arcontent,
+		         argroup,       arstep,        arindent,
+		         aprnum,				 aprid,				 aprnickname
+		from(
+		  select row_number() over (order by argroup desc, arstep asc) as  num, 
+		         t1.arnum,      t1.arbnum,
+		         t1.arid,       t1.arnickname,
+		         t1.arcdate,
+		         t1.arcontent,
+		         t1.argroup,    t1.arstep,     t1.arindent,
+		         t1.aprnum,		 t1.aprid,			 t1.aprnickname
+		    from arboard t1
+		   where arbnum = #{arbnum}
+		   )
+		where num between #{startRec} and #{endRec}
+	  ) x1, 
+	  
+	  (select arnum, nvl(count(decode(avote,1,1)),0) good, nvl(count(decode(avote,2,1)),0) bad
+	    from aboard_vote
+	  group by arnum) x2
+	
+	where x1.arnum = x2.arnum(+)
+
+<!-- 	select   rnum,         bnum,
+	         rid,          rnickname,
+	         rcdate,
+	         rcontent,
+	         rgroup,       rstep,        rindent,
+	         prnum
+	from(
+	  select row_number() over (order by rgroup desc, rstep asc) as  num, 
+	         t1.rnum,      t1.bnum,
+	         t1.rid,       t1.rnickname,
+	         t1.rcdate,
+	         t1.rcontent,
+	         t1.rgroup,    t1.rstep,     t1.rindent,
+	         t1.prnum
+	    from rboard t1
+	   where bnum = #{bnum}
+	   )
+	where num between #{startRec} and #{endRec} -->
+	
+</select>
+
+<!-- 댓수정 -->
+<update id="modify"
+				parameterType="ArboardVO">
+	update arboard
+		 set arudate = systimestamp,
+		 		 arcontent = #{arcontent}
+		 		 where arnum = #{arnum}
+</update>
+
+<!-- 댓글 삭제 -->
+<delete id="delete"
+				parameterType="long">
+	delete from arboard where arnum = #{arnum}
+
+</delete>
+
+<!-- 대댓글 작성 -->
+<insert id="reply"
+				parameterType="ArboardVO">
+
+	INSERT INTO arboard (
+	  arnum,
+	  arbnum,
+	  arid,
+	  arnickname,
+	  arcontent,
+	  argroup,
+	  arstep,
+	  arindent,
+	  aprnum,
+	  aprid,
+	  aprnickname
+	
+	) VALUES (
+	  arboard_arnum_seq.nextval,
+	  #{arbnum},
+	  #{arid},
+	  #{arnickname},
+	  #{arcontent},
+	  #{argroup},
+	  #{arstep} + 1,
+	  #{arindent} + 1,
+		#{aprnum},
+	  #{aprid},
+	  #{aprnickname}		
+	)
+</insert>
+<!-- 이전댓글 step 업데이트 -->
+<update id="updateStep"
+				parameterType="map">
+		update arboard
+		   set arstep = arstep + 1
+	   where argroup = #{argroup} and arstep > #{arstep}	
+</update>	
+<!-- 댓글정보 읽어오기 -->
+<select id="replyView"
+				parameterType="long"
+				resultType="ArboardVO">
+	select arbnum, arid, arnickname, argroup, arstep, arindent 
+	  from arboard where arnum = #{arnum}
+</select>
+<!-- 댓글 호감, 비호감 -->
+<select id="checkVote"
+				parameterType="AvoteVO">
+	select count(arnum)
+	  from aboard_vote
+	 where arnum = #{arnum}
+  	 and abnum = #{abnum}
+  	 and arid  = #{arid}
+</select>
+
+<insert id="insertVote"
+				parameterType="AvoteVO">
+	INSERT INTO aboard_vote (
+	  arnum,
+	  abnum,
+	  arid,
+	  avote
+	) VALUES (
+	  #{arnum},
+	  #{abnmum},
+	  #{arid},
+	  #{avote}
+	)
+</insert>
+<update id="updateVote">
+	update aboard_vote
+		 set avote  = #{avote},
+		 		 rudate = systimestamp
+	 where arnum = #{arnum}
+  	 and abnum = #{abnum}
+  	 and arid  = #{arid}
+</update>
+
+<!-- vote 있으면 update 없으면 insert -->	
+<update id="mergeVote">
+	merge into aboard_vote
+	using dual
+	   on ( arnum=#{arnum} and abnum=#{arnum} and arid=#{arid} )
+	when matched then
+	     update set avote=#{avote}
+	when not matched then  
+	     insert (  arnum,   abnum,   arid,   avote ) 
+	     values (#{arnum},#{abnum},#{arid},#{avote})
+</update>	
+
+<!-- 댓글 총계 -->
+<select id="replyTotalRec"
+				parameterType="long"
+				resultType="int">
+	select count(arnum) from arboard where arbnum = #{arbnum}
+</select>
+
+
+
+</mapper>

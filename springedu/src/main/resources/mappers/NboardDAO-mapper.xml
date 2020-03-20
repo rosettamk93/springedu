@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mappers.NboardDAO-mapper">
+<!-- 카테고리 읽어오기 -->
+<select id="getCategory3"
+					resultType="BoardCategoryVO">
+		select cid, cname from board_category
+	</select>	
+	
+	<!-- 게시글작성 -->
+	<insert id="write3"
+					parameterType="NboardVO">
+	  INSERT INTO nboard(
+  nbnum,  nbcategory,
+  nbtitle, nbid,
+  nbnickname, nbcontent
+  ) VALUES (
+  NBOARD_NBNUM_SEQ.nextval,
+  #{boardCategoryVO.cid},
+  #{nbtitle},
+  #{nbid},
+  #{nbnickname},
+  #{nbcontent}
+  )
+  <selectKey keyProperty="nbnum" resultType="long" order="AFTER">
+  SELECT nboard_nbnum_seq.currval from dual
+  </selectKey>
+	</insert>
+	
+	<!-- 게시글수정 -->
+		<update id="modify3"
+					parameterType="NboardVO">
+					update nboard
+					set nbcategory = #{boardCategoryVO.cid},
+			 		 nbtitle    = #{nbtitle},
+			 		 nbcontent  = #{nbcontent},
+					 nbudate    = systimestamp	 		 
+		 where nbnum      = #{nbnum}
+					</update>
+			<!-- 게시글삭제 -->
+	<delete id="delete3" parameterType="long">
+		delete from nboard where nbnum = #{nbnum}
+	</delete>		
+	<!-- 게시글보기 -->
+	<select id="view3" 
+					parameterType="long"
+					resultType="NboardVO">
+		SELECT
+		  nbnum,
+		  t2.cid   as "boardCategoryVO.cid",
+		  t2.cname as "boardCategoryVO.cname",
+		  nbtitle,
+		  nbnickname,
+		  nbcdate,
+		  nbudate,
+		  nbhit,
+		  nbcontent
+	 		FROM
+		  nboard t1 , board_category t2
+		where t1.nbcategory = t2.cid	
+			and t1.nbnum 		 = #{nbnum}
+			and t2.cid = 1006
+	</select>
+	<!-- 조회수 +1증가 -->
+	<update id="updateHit3" 
+					parameterType="long">
+	
+		update nboard
+			 set nbhit = nbhit + 1
+		 where nbnum = #{nbnum}
+	</update>
+	
+	<!-- 게시글목록 -->
+	<!-- 1)전체 -->
+	<select id="list3"
+					resultType="NboardVO">
+		SELECT
+		  nbnum,
+		  t2.cid   as "boardCategoryVO.cid",
+		  t2.cname as "boardCategoryVO.cname",
+		  nbtitle,
+		  nbid,
+		  nbnickname,
+		  nbcdate,
+		  nbudate,
+		  nbhit,
+		  nbcontent
+		  		FROM
+		  nboard t1 ,board_category t2
+		where t1.nbcategory = t2.cid	
+		and t2.cid = 1006
+order by t1.nbcdate desc
+	</select>		  
+	
+	<!-- 2)검색어 없는 게시글페이징 -->
+	
+	<!-- 3)검색어 있는 게시글검색(전체,제목,내용,작성자ID,별칭) -->
+	<select id="list5"
+					parameterType="map"
+					resultType="NboardVO">
+         select nbnum, 
+                cid   as "boardCategoryVO.cid",
+                cname as "boardCategoryVO.cname",
+                nbtitle,
+                nbid,
+                nbnickname,
+                nbcdate,
+                nbudate,
+                nbhit
+           from (select row_number() over(order by t1.nbcdate desc ) as num, 
+                     t1.nbnum,
+                     t2.cid,
+                     t2.cname,
+                     t1.nbtitle,
+                     t1.nbid,
+                     t1.nbnickname,
+                     t1.nbcdate,
+                     t1.nbudate,
+                     t1.nbhit
+                from nboard t1, board_category t2
+               where t1.nbcategory = t2.cid 
+               and t2.cid = 1006
+     <if test="searchType != null and list != null"> 
+   		and
+	 		<foreach item="item" collection="list"
+	 			open="(" separator="or" close=")">   		
+<!--  			<bind name="item" value="'%'+item+'%'"/> -->
+      <choose>
+      	<!-- 제목+내용 -->
+      	<when test="searchType == 'TC'.toString()">
+      		nbtitle 	 like  '%'||#{item}||'%' or nbcontent like  '%'||#{item}||'%' 
+      	</when>
+      	<!-- 제목 -->
+      	<when test="searchType == 'T'.toString()">
+      		nbtitle 	 like '%'||#{item}||'%'             	
+      	</when>
+      	<!-- 내용 -->
+      	<when test="searchType == 'C'.toString()">
+      		nbcontent like '%'||#{item}||'%'             	
+      	</when>               	
+      	<!-- 작성자(별칭) -->
+      	<when test="searchType == 'N'.toString()">
+      		nbnickname like '%'||#{item}||'%'                	
+      	</when>                 	
+      	<!-- 아이디 -->
+      	<when test="searchType == 'I'.toString()">
+      		nbid like '%'||#{item}||'%'                	
+      	</when>   
+      	<!-- 전체 -->              	
+       <otherwise>
+      			 nbtitle 	 	like '%'||#{item}||'%' 
+          or nbcontent 	like '%'||#{item}||'%'                    
+          or nbnickname 	like '%'||#{item}||'%' 
+          or nbid 				like '%'||#{item}||'%' 
+       </otherwise>
+      </choose>
+      </foreach>  
+     </if>  
+              )                            
+      where num between #{startRec} and #{endRec}     
+	</select>	
+	
+	
+	<!-- 총 레코드수 -->
+	<select id="totalRecordCount3"
+					parameterType="map"
+					resultType="int">
+		select count(t1.nbnum) as totalcnt
+      from nboard t1, board_category t2
+     where t1.nbcategory = t2.cid 
+     and t2.cid = 1006
+     <if test="searchType != null and list != null"> 
+   		and
+	 		<foreach item="item" collection="list"
+	 			open="(" separator="or" close=")">   		
+<!--  			<bind name="item" value="'%'+item+'%'"/> -->
+      <choose>
+      	<!-- 제목+내용 -->
+      	<when test="searchType == 'TC'.toString()">
+      		nbtitle 	 like  '%'||#{item}||'%' or nbcontent like  '%'||#{item}||'%' 
+      	</when>
+      	<!-- 제목 -->
+      	<when test="searchType == 'T'.toString()">
+      		nbtitle 	 like '%'||#{item}||'%'             	
+      	</when>
+      	<!-- 내용 -->
+      	<when test="searchType == 'C'.toString()">
+      		nbcontent like '%'||#{item}||'%'             	
+      	</when>               	
+      	<!-- 작성자(별칭) -->
+      	<when test="searchType == 'N'.toString()">
+      		nbnickname like '%'||#{item}||'%'                	
+      	</when>                 	
+      	<!-- 아이디 -->
+      	<when test="searchType == 'I'.toString()">
+      		nbid like '%'||#{item}||'%'                	
+      	</when>   
+      	<!-- 전체 -->              	
+       <otherwise>
+      			 nbtitle 	 	like '%'||#{item}||'%' 
+          or nbcontent 	like '%'||#{item}||'%'                    
+          or nbnickname 	like '%'||#{item}||'%' 
+          or nbid 				like '%'||#{item}||'%' 
+       </otherwise>
+      </choose>
+      </foreach>  
+     </if>                        
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</mapper>

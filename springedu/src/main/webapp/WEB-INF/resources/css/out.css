@@ -1,0 +1,80 @@
+@charset "utf-8";
+		body{font-family: Stylish, "Open Sans", sans-serif;}
+        main{padding-top: 90px; heigth: 720px; 
+        }
+         /* div{outline: 1px solid red;} */
+        .conatainer{
+        }
+        *{box-sizing: border-box;}
+        
+        .container1{
+            height: 100%;
+          display: flex;
+          justify-content: center;
+        }
+        .login-wrapper{
+        		border-radius : 5px;
+            padding: 10px;
+            width: 200px;
+        }
+        .login-content > div{
+            margin: 10px 0;
+        }
+        .login-content input{
+            width: 100%;
+            border: 1px solid gray;
+        }
+        #schBtn, #loginBtn, #outBtn{
+            background-color: #010101;
+            color: white;
+            font-weight: 900;
+            font-family: Stylish, "Open Sans", sans-serif;
+        }
+        .login-title{
+            text-align: center;
+        }
+        #loginForm{
+            border-bottom: 1px solid gray;
+            padding: 10px;
+        }
+        #id, #pw,#loginBtn{
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        /*비번찾기*/
+        .find_info{
+            margin-top: 20px;
+            font-size: 0.75rem;
+            color: gray;
+            text-align: center;
+        }
+        .find_info > a{
+            text-decoration: none;
+            color: gray;
+        }
+        .find_info > a:hover{
+            text-decoration: underline;
+        }
+
+        /*오류메시지를 표현하기 위한 클래스*/
+        .errmsg{
+          color: red;
+          font-size: 0.5em;
+          /* font-weight: bold; */
+        }
+        .logo{
+            /* outline: 1px solid red; */
+            width: 100%;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+        }
+        .entirebox{
+            position: relative;
+            top: 200px;
+ }
+        .abstr{
+/*         outline: 1px solid red; */
+        width:100%;
+        height: 350px;}

@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mappers.FboardDAO-mapper">
+
+
+	<!-- 상품등록 -->
+	<insert id="write4"  
+					parameterType="FboardVO">
+		INSERT INTO fboard (
+		  fnum,    
+		  fbid,
+		  fbnickname,
+		  ftitle,  
+		  fsubtitle,      
+		  fmaker,
+		  price,
+		  ecode,
+		  fweight,
+		  fheight,
+		  flenght,
+		  fwidth
+		) VALUES (
+		  fboard_fnum_seq.nextval,    
+		   #{fbid},
+		   #{fbnickname},
+		  #{ftitle},  
+		  #{fsubtitle},      
+		  #{fmaker},
+		  #{price},
+		  #{ecode},
+		  #{fweight},
+		  #{fheight},
+		  #{flenght},
+		  #{fwidth}
+		)	
+		<selectKey keyProperty="fnum" resultType="long" order="AFTER">
+			select board_bnum_seq.currval from dual
+		</selectKey>
+	</insert>
+<!-- 첨부파일 저장  -->
+<insert id="fileWritef"
+					parameterType="FboardFileVO">
+		insert into fboard_file	(
+			  fid, 	  fnum, 	 fname, 	 fsize, 	 ftype, 	 fdata
+		)values(
+			fboard_file_fid_seq.nextval, #{fnum}, #{fname}, #{fsize}, #{ftype}, #{fdata} 				
+		)			
+	</insert>
+	
+	<!-- 게시글수정 -->
+	<update id="modify4"
+					parameterType="FboardVO">
+		update board	
+			 set	 ftitle = #{ftitle},  
+		  fsubtitle = #{fsubtitle},      
+		  fmaker = #{fmaker},
+		  price = #{price},
+		  ecode = #{ecode},
+		  fweight = #{fweight},
+		  fheight = #{fheight},
+		  flenght = #{flenght},
+		  fwidth = #{fwidth},
+		 where fnum      = #{fnum}
+	</update>
+	
+	
+	<!-- 상품삭제 -->
+	<delete id="delete4" parameterType="long">
+		delete from fboard where fnum = #{fnum}
+	</delete>
+	
+	<!-- 첨부파일 1건 삭제 -->
+	<delete id="fileDeletef" parameterType="long">
+		delete from fboard_file where fid = #{fid}
+	</delete>
+	
+	<!-- 게시글 첨부파일 전체 삭제 -->
+	<delete id="filesDeletef" parameterType="long">
+		delete from fboard_file where fnum = #{fnum}
+	</delete>
+	
+	<!-- 게시글보기 -->
+	<select id="view4" 
+					parameterType="long"
+					resultType="FboardVO">
+  SELECT
+		   fnum
+		   , fbid
+		   , fbnickname
+		   ,  ftitle
+		   ,   fsubtitle
+		   , fmaker
+		  ,	price
+		  , fcode
+		  , fweight
+		  ,  fheight
+		  ,	flength
+		  , fwidth
+		FROM		 fboard		where fnum  =  {fnum}
+	</select>
+	
+	<!-- 첨부파일 가져오기 -->
+	<select id="fileViewsf"
+					parameterType="long"
+					resultType="FboardFileVO">
+		SELECT 
+  t1.fid, t2.fnum, t1.fname, 
+  t1.fsize, t1.ftype, t1.fdata, 
+  t1.fcdate, t1.fudate
+  from fboard_file t1, fboard t2
+  where t1.fnum = t2.fnum
+  and t1.fid = #{fid}		
+	</select>
+	
+	<!-- 게시글목록 -->
+	<!-- 1)전체 -->
+	<select id="listf"
+					resultType="FboardVO">
+	SELECT 
+  fnum
+  , fbid
+  , fbnickname
+  ,   ftitle
+  ,   fsubtitle
+  , fmaker
+		  ,	price
+		  , fcode
+		  , fweight
+      ,  fheight
+      ,	flength
+      , fwidth
+  from fboard
+  order by fnum asc
+	</select>		  
+	<!-- 2)검색어 없는 게시글페이징 -->
+	
+	<!-- 3)검색어 있는 게시글검색(전체,제목,내용,작성자ID,별칭) -->
+	
+	<select id="listf3"
+					parameterType="map"
+					resultType="FboardVO">
+         select fnum, 
+         fbid, 
+         fbnickname,  
+         ftitle,   
+         fsubtitle,      
+		  fmaker,
+		  	price, 
+		  	fcode
+		  	
+     
+  from  (select row_number() over(order by fnum) as num, 
+      fnum, 
+      fbid, 
+      fbnickname,  
+      ftitle,   
+      fsubtitle,      
+		  fmaker,
+		  	price,
+		  	 fcode
+  from fboard
+  where fnum >= 0
+     <if test="searchType != null and list != null"> 
+   		and
+	 		<foreach item="item" collection="list"
+	 			open="(" separator="or" close=")">   		
+<!--  			<bind name="item" value="'%'+item+'%'"/> -->
+      <choose>
+      	<!-- 상품명+부제 -->
+      	<when test="searchType == 'TC'.toString()">
+      		ftitle 	 like  '%'||#{item}||'%' or fsubtitle like  '%'||#{item}||'%' 
+      	</when>
+      	<!-- 상품명 -->
+      	<when test="searchType == 'T'.toString()">
+      		ftitle 	 like '%'||#{item}||'%'             	
+      	</when>
+      	<!-- 제품코드 -->
+      	<when test="searchType == 'C'.toString()">
+      		fcode like '%'||#{item}||'%'             	
+      	</when>               	
+      	<!-- 가격 -->
+      	<when test="searchType == 'N'.toString()">
+      		price like '%'||#{item}||'%'                	
+      	</when>                 	
+      	<!-- 제조사 -->
+      	<when test="searchType == 'I'.toString()">
+      		fmaker like '%'||#{item}||'%'                	
+      	</when>   
+      	<!-- 전체 -->              	
+       <otherwise>
+      			 ftitle 	 	like '%'||#{item}||'%' 
+          or fsubtitle 	like '%'||#{item}||'%'                    
+          or fcode    	like '%'||#{item}||'%' 
+          or price 			like '%'||#{item}||'%' 
+          or fmaker     like '%'||#{item}||'%' 
+       </otherwise>
+      </choose>
+      </foreach>  
+     </if>  
+              )                            
+      where num between #{startRec} and #{endRec}     
+	</select>
+	
+	<!-- 첨부파일 조회 -->
+	<select id="fileviewf"
+					parameterType="long"
+					resultType="FboardFileVO">
+					
+		 select fid, fnum, fname, fsize, ftype, fdata, fcdate, fudate
+  from fboard_file 
+  where fid= #{fid}
+  order by fid;
+	</select>
+	
+	<!-- 총 레코드수 -->
+	<select id="totalRecordCount"
+					parameterType="map"
+					resultType="int">
+		select count(fnum) as totalcnt
+      from fboard
+       where fnum >= 0
+     <if test="searchType != null and list != null"> 
+   		and
+	 		<foreach item="item" collection="list"
+	 			open="(" separator="or" close=")">   		
+<!--  			<bind name="item" value="'%'+item+'%'"/> -->
+      <choose>
+      	      	<!-- 상품명+부제 -->
+      	<when test="searchType == 'TC'.toString()">
+      		ftitle 	 like  '%'||#{item}||'%' or fsubtitle like  '%'||#{item}||'%' 
+      	</when>
+      	<!-- 상품명 -->
+      	<when test="searchType == 'T'.toString()">
+      		ftitle 	 like '%'||#{item}||'%'             	
+      	</when>
+      	<!-- 제품코드 -->
+      	<when test="searchType == 'C'.toString()">
+      		fcode like '%'||#{item}||'%'             	
+      	</when>               	
+      	<!-- 가격 -->
+      	<when test="searchType == 'N'.toString()">
+      		price like '%'||#{item}||'%'                	
+      	</when>                 	
+      	<!-- 제조사 -->
+      	<when test="searchType == 'I'.toString()">
+      		fmaker like '%'||#{item}||'%'                	
+      	</when>   
+      	<!-- 전체 -->              	
+       <otherwise>
+      			 ftitle 	 	like '%'||#{item}||'%' 
+          or fsubtitle 	like '%'||#{item}||'%'                    
+          or fcode    	like '%'||#{item}||'%' 
+          or price 			like '%'||#{item}||'%' 
+          or fmaker     like '%'||#{item}||'%' 
+       </otherwise>
+      </choose>
+      </foreach>  
+     </if>                        
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</mapper>

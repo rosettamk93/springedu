@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mappers.MemberDAO-mapper">
+
+<!-- 회원 등록 -->
+<insert id="joinMember" 
+				parameterType="MemberVO">
+		INSERT INTO member ( id, pw, tel, nickname, gender, region, birth, cdate)
+		VALUES (#{id},#{pw},#{tel},#{nickname},#{gender},#{region},#{birth},systimestamp)	
+</insert>
+
+<!-- 회원 수정 -->
+<update id="modifyMember"
+				parameterType="MemberVO">
+		update member
+		   set tel = #{tel},
+		       nickname = #{nickname},
+					 gender = #{gender},
+					 region = #{region},
+					 birth = #{birth},
+					 udate = systimestamp
+		 where id = #{id} and pw = #{pw}
+</update>
+<!-- 회원 전체조회 -->
+<select id="selectAllMember"
+				resultType="MemberVO">
+		SELECT id,  		pw,  		tel,  	nickname,  gender, 
+		       region,  birth,  cdate,  udate , admin
+		  FROM member 
+</select>
+<!-- 회원 개별조회 -->
+<select id="selectMember" 
+				parameterType="string"
+				resultType="MemberVO">
+select id, pw, tel, nickname,
+SUBSTR(region, 0, INSTR(region, ',', 1, 1)-1) as region1,
+SUBSTR(region, INSTR(region, ',', 1, 1)+1, INSTR(region, ',', 1, 2)-7) as region2,
+SUBSTR(region, INSTR(region, ',', 1, 2)+1, INSTR(region, ',', 1, 2)) as region3, birth, cdate,
+udate, admin from member where id = #{id}
+</select>
+<!-- 회원 탈퇴 -->
+<delete id="outMember" 
+				parameterType="map">
+		delete from member where id=#{id} and pw=#{pw}
+</delete>
+<!-- 로그인 -->
+<select id="loginMember"
+				parameterType="MemberVO"
+				resultType="MemberVO">
+		SELECT id, pw, tel, nickname, gender, region, birth, cdate, udate , admin
+		  FROM member 		
+		 where id = #{id} 		
+		   and pw = #{pw} 	
+		   	
+</select>
+<!-- 아이디 찾기 -->
+<select id="findID"
+				parameterType="MemberVO"
+				resultType="string">
+		select id from member where tel=#{tel} and birth=#{birth} 
+</select>
+<!-- 비밀번호 변경 -->
+<update id="changePW"
+				parameterType="MemberVO">
+		update member 
+		   set pw = #{pw} 
+		 where id=#{id} 
+</update>		
+<!-- 비밀번호 변경 대상 찾기 -->
+<select id="findPW"
+				parameterType="MemberVO"
+				resultType="int">
+		select count(id) from member
+		 where id=#{id} and tel=#{tel} and birth=#{birth}
+</select> 
+</mapper>
+
+
+
+
+
+

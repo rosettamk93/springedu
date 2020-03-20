@@ -1,0 +1,76 @@
+@charset "utf-8";
+
+
+ body{ font-family: Stylish, "Open Sans", sans-serif;}
+main{
+	padding-top: 5px;
+        }
+div{
+    box-sizing: border-box;
+    
+}
+.container1{
+    display: flex;
+    justify-content: center;
+}
+.content{
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    max-width: 350px;
+    height: 700px;
+}
+.content div{
+    flex: 1 1 300px;
+    background-color: whitesmoke;
+    text-align: center;
+    /* width: 100%; */
+}
+.content div:nth-child(3)
+,.content div:nth-child(6),
+.content div:nth-child(9),
+.content div:nth-child(12),
+.content div:nth-child(15),
+.content div:nth-child(18) {
+/*   border:1px solid gray;
+ */  padding:1px;
+  padding-left:10px;
+}
+input{width: 270px;}
+
+ select{
+    width: 100%;
+    border-radius: 5px;
+}
+input[type=radio]{
+    width: auto;
+}
+.join-title{
+    text-align: center;
+}
+.errmsg{
+    color: red;
+    font-size: 0.7em;
+    font-weight: bold;
+}
+#joinBtn, #modifyBtn{
+	            background-color: #010101;
+            color: white;
+            font-weight: 900;
+            width : 100%;
+}
+
+a{text-align: center;
+	text-decoration: none;
+	color : black;
+	list-style-type: none;
+	}
+	        .abstr{
+/*         outline: 1px solid red; */
+        width:100%;
+        height: 50px;}
+        
+        #cancle{
+        width : 100%; background-color: white; color: black;}
+        
